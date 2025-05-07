@@ -1,47 +1,103 @@
 package com.example.todolist;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+
     private RecyclerView recyclerView;
     private TaskAdapter taskAdapter;
-    private ArrayList<Task> taskList;
+    private List<Task> taskList;
     private Button addTaskButton;
-    private EditText taskInput; // EditText pour saisir une tâche
+    private EditText taskInput;
+    private TaskDao taskDao;
+    private int currentUserId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialisation du RecyclerView et de l'adaptateur
-        recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        taskList = new ArrayList<>();
-        taskAdapter = new TaskAdapter(taskList);
-        recyclerView.setAdapter(taskAdapter);
+        // ✅ Récupérer l'ID utilisateur depuis LoginActivity
+        currentUserId = getIntent().getIntExtra("user_id", -1);
+        if (currentUserId == -1) {
+            finish(); // Quitte si aucun ID n'est transmis
+            return;
+        }
 
-        // Initialisation de l'EditText et du bouton "Add Task"
-        taskInput = findViewById(R.id.taskInput);  // Champ pour entrer une nouvelle tâche
+        // Initialisation DAO
+        taskDao = AppDatabase.getInstance(this).taskDao();
+
+        // Vues
+        recyclerView = findViewById(R.id.recyclerView);
+        taskInput = findViewById(R.id.taskInput);
         addTaskButton = findViewById(R.id.addTaskButton);
 
-        // Gérer le clic sur le bouton "Add Task"
-        addTaskButton.setOnClickListener(v -> {
-            String taskTitle = taskInput.getText().toString().trim();  // Récupérer le texte saisi
+        // Liste des tâches + adapter
+        taskList = new ArrayList<>();
+        taskAdapter = new TaskAdapter(taskList,
+                task -> {
+                    // Suppression
+                    new Thread(() -> {
+                        taskDao.delete(task);
+                        runOnUiThread(this::loadTasksFromDatabase);
+                    }).start();
+                },
+                task -> {
+                    // Clic simple → ouvrir la page détail
+                    Intent intent = new Intent(MainActivity.this, TaskDetailActivity.class);
+                    intent.putExtra("task_id", task.id);
+                    startActivity(intent);
+                }
+        );
 
-            if (!taskTitle.isEmpty()) {  // Vérifier que la tâche n'est pas vide
-                // Ajouter la nouvelle tâche à la liste
-                taskList.add(new Task(taskTitle, "Description for " + taskTitle));
-                taskAdapter.notifyItemInserted(taskList.size() - 1);  // Informer l'adaptateur du changement
-                taskInput.setText("");  // Réinitialiser le champ de texte après ajout
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(taskAdapter);
+
+        // Charger les tâches existantes
+        loadTasksFromDatabase();
+
+        // Ajouter une tâche
+        addTaskButton.setOnClickListener(v -> {
+            String title = taskInput.getText().toString().trim();
+
+            if (!title.isEmpty()) {
+                Task newTask = new Task(title, "", currentUserId);
+
+                new Thread(() -> {
+                    taskDao.insert(newTask);
+                    runOnUiThread(() -> {
+                        taskInput.setText("");
+                        loadTasksFromDatabase();
+                    });
+                }).start();
             }
         });
     }
+
+    private void loadTasksFromDatabase() {
+        new Thread(() -> {
+            List<Task> tasks = taskDao.getTasksForUser(currentUserId);
+            runOnUiThread(() -> {
+                taskList.clear();
+                taskList.addAll(tasks);
+                taskAdapter.notifyDataSetChanged();
+            });
+        }).start();
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadTasksFromDatabase(); // ✅ recharge les données dès qu'on revient
+    }
+
 }

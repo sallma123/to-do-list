@@ -1,8 +1,7 @@
 package com.example.todolist;
-import com.example.todolist.AppDatabase;  // Vérifie le bon chemin du package
+
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -13,7 +12,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private EditText loginEmail, loginPassword;
     private Button loginButton, signUpButton;
-    private UserDao userDao; // DAO pour accéder aux utilisateurs dans la base de données
+    private UserDao userDao;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,42 +25,34 @@ public class LoginActivity extends AppCompatActivity {
         loginButton = findViewById(R.id.loginButton);
         signUpButton = findViewById(R.id.signUpButton);
 
-        // Initialiser le UserDao
+        // Initialiser DAO
         userDao = AppDatabase.getInstance(this).userDao();
 
-        // Bouton de connexion
+        // Connexion
         loginButton.setOnClickListener(v -> {
             String email = loginEmail.getText().toString();
             String password = loginPassword.getText().toString();
 
-            // Vérifiez si l'email et le mot de passe sont valides
             new Thread(() -> {
-                boolean isValid = isValidLogin(email, password);
+                User user = userDao.findByEmailAndPassword(email, password);
 
                 runOnUiThread(() -> {
-                    if (isValid) {
+                    if (user != null) {
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        intent.putExtra("user_id", user.id); // ✅ passer ID
                         startActivity(intent);
                         finish();
                     } else {
-                        Toast.makeText(LoginActivity.this, "Informations de connexion incorrectes", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(LoginActivity.this, "Identifiants incorrects", Toast.LENGTH_SHORT).show();
                     }
                 });
             }).start();
-
         });
 
-        // Bouton d'inscription
+        // Rediriger vers la page d'inscription
         signUpButton.setOnClickListener(v -> {
-            // Ouvre la page d'inscription
             Intent intent = new Intent(LoginActivity.this, SignUpActivity.class);
             startActivity(intent);
         });
-    }
-
-    private boolean isValidLogin(String email, String password) {
-        // Vérifiez si l'email et le mot de passe correspondent à un utilisateur dans la base de données
-        User user = userDao.findByEmailAndPassword(email, password); // Requête personnalisée pour récupérer un utilisateur
-        return user != null; // Si l'utilisateur est trouvé, les informations sont valides
     }
 }
