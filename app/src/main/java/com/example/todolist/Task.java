@@ -1,32 +1,27 @@
 package com.example.todolist;
 
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
+@Entity(tableName = "task_table")
 public class Task {
-    private String title;  // Titre de la tâche
-    private String description;  // Description de la tâche
+    @PrimaryKey(autoGenerate = true)
+    public int id;
+    public String date;
+    public int userId;
 
-    // Constructeur pour initialiser les valeurs
-    public Task(String title, String description) {
+    public String title;
+    public String description;
+
+    public Task(String title, String description, int userId) {
         this.title = title;
         this.description = description;
+        this.userId = userId;
     }
 
-    // Getter pour obtenir le titre de la tâche
-    public String getTitle() {
-        return title;
-    }
 
-    // Getter pour obtenir la description de la tâche
-    public String getDescription() {
-        return description;
-    }
-
-    // Setter pour définir un nouveau titre pour la tâche (si nécessaire)
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    // Setter pour définir une nouvelle description pour la tâche (si nécessaire)
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    public String getTitle() { return title; }
+    public String getDescription() { return description; }
+    public void setTitle(String title) { this.title = title; }
+    public void setDescription(String description) { this.description = description; }
 }
