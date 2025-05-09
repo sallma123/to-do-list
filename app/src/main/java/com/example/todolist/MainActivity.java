@@ -55,7 +55,10 @@ public class MainActivity extends AppCompatActivity {
                     Intent intent = new Intent(MainActivity.this, TaskDetailActivity.class);
                     intent.putExtra("task_id", task.id);
                     startActivity(intent);
-                });
+                },
+                this::loadTasksFromDatabase // ✅ appelé quand on coche ou décoche
+        );
+
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(taskAdapter);

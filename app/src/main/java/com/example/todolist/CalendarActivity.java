@@ -88,8 +88,13 @@ public class CalendarActivity extends AppCompatActivity {
                     Intent intent = new Intent(CalendarActivity.this, TaskDetailActivity.class);
                     intent.putExtra("task_id", task.id);
                     startActivity(intent);
-                }
+                },
+                () -> runOnUiThread(() -> {
+                    loadTasksForDate(selected.toString());
+                    calendarView.notifyCalendarChanged();
+                }) // ✅ permet de mettre à jour après un changement
         );
+
 
         calendarTaskList.setLayoutManager(new LinearLayoutManager(this));
         calendarTaskList.setAdapter(taskAdapter);

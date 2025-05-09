@@ -16,11 +16,15 @@ public class TaskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private static final int TYPE_HEADER = 0;
     private static final int TYPE_TASK = 1;
-
-    private final List<Object> itemList;
+    private final OnTaskStatusChangeListener statusChangeListener;
+    private final List<Object> taskList;
     private final OnTaskDeleteListener deleteListener;
     private final OnTaskClickListener clickListener;
     private final TaskDao taskDao;
+
+    public interface OnTaskStatusChangeListener {
+        void onStatusChanged();
+    }
 
     public interface OnTaskDeleteListener {
         void onTaskDelete(Task task);
@@ -30,18 +34,20 @@ public class TaskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         void onTaskClick(Task task);
     }
 
-    public TaskAdapter(Context context, List<Object> itemList,
+    public TaskAdapter(Context context, List<Object> taskList,
                        OnTaskDeleteListener deleteListener,
-                       OnTaskClickListener clickListener) {
-        this.itemList = itemList;
+                       OnTaskClickListener clickListener,
+                       OnTaskStatusChangeListener statusChangeListener) {
+        this.taskList = taskList;
         this.deleteListener = deleteListener;
         this.clickListener = clickListener;
+        this.statusChangeListener = statusChangeListener;
         this.taskDao = AppDatabase.getInstance(context).taskDao();
     }
 
     @Override
     public int getItemViewType(int position) {
-        return itemList.get(position) instanceof String ? TYPE_HEADER : TYPE_TASK;
+        return taskList.get(position) instanceof String ? TYPE_HEADER : TYPE_TASK;
     }
 
     @Override
@@ -59,10 +65,12 @@ public class TaskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof HeaderViewHolder) {
-            ((HeaderViewHolder) holder).headerText.setText((String) itemList.get(position));
+            ((HeaderViewHolder) holder).headerText.setText((String) taskList.get(position));
         } else if (holder instanceof TaskViewHolder) {
-            Task task = (Task) itemList.get(position);
+            Task task = (Task) taskList.get(position);
             TaskViewHolder th = (TaskViewHolder) holder;
+
+            th.checkBox.setOnCheckedChangeListener(null); // Important: éviter les déclenchements multiples
             th.title.setText(task.getTitle());
             th.checkBox.setChecked(task.isDone);
 
@@ -74,16 +82,23 @@ public class TaskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 if (clickListener != null) clickListener.onTaskClick(task);
             });
 
-            th.checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            th.checkBox.setOnCheckedChangeListener((button, isChecked) -> {
                 task.isDone = isChecked;
-                new Thread(() -> taskDao.update(task)).start();
+                new Thread(() -> {
+                    taskDao.update(task);
+                    button.post(() -> {
+                        if (statusChangeListener != null) {
+                            statusChangeListener.onStatusChanged();
+                        }
+                    });
+                }).start();
             });
         }
     }
 
     @Override
     public int getItemCount() {
-        return itemList.size();
+        return taskList.size();
     }
 
     public static class TaskViewHolder extends RecyclerView.ViewHolder {
