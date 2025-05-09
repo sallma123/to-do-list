@@ -1,12 +1,12 @@
 package com.example.todolist;
 
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.graphics.drawable.Drawable;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
@@ -40,13 +40,12 @@ public class CalendarActivity extends AppCompatActivity {
     private Button addTaskButton;
 
     private TaskAdapter taskAdapter;
-    private final List<Task> dailyTasks = new ArrayList<>();
-
+    private final List<Object> dailyTasks = new ArrayList<>();
     private TaskDao taskDao;
     private int currentUserId;
     private String selectedDate;
 
-    private LocalDate today = LocalDate.now();
+    private final LocalDate today = LocalDate.now();
     private LocalDate selected = today;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.FRENCH);
 
@@ -61,6 +60,7 @@ public class CalendarActivity extends AppCompatActivity {
             return;
         }
 
+        // Vues
         calendarView = findViewById(R.id.calendarView);
         calendarTaskList = findViewById(R.id.calendarTaskList);
         noTasksText = findViewById(R.id.noTasksText);
@@ -68,15 +68,19 @@ public class CalendarActivity extends AppCompatActivity {
         addTaskButton = findViewById(R.id.addTaskButtonCalendar);
         calendarTitle = findViewById(R.id.calendarTitle);
 
+        // DAO
         taskDao = AppDatabase.getInstance(this).taskDao();
 
-        taskAdapter = new TaskAdapter(dailyTasks,
+        // Adapter
+        taskAdapter = new TaskAdapter(
+                CalendarActivity.this,
+                dailyTasks,
                 task -> {
                     new Thread(() -> {
                         taskDao.delete(task);
                         runOnUiThread(() -> {
                             loadTasksForDate(selected.toString());
-                            calendarView.notifyCalendarChanged(); // 🔄 rafraîchit les points
+                            calendarView.notifyCalendarChanged();
                         });
                     }).start();
                 },
@@ -84,12 +88,13 @@ public class CalendarActivity extends AppCompatActivity {
                     Intent intent = new Intent(CalendarActivity.this, TaskDetailActivity.class);
                     intent.putExtra("task_id", task.id);
                     startActivity(intent);
-                });
-
+                }
+        );
 
         calendarTaskList.setLayoutManager(new LinearLayoutManager(this));
         calendarTaskList.setAdapter(taskAdapter);
 
+        // Setup calendrier
         calendarView.setup(
                 YearMonth.from(today).minusMonths(6),
                 YearMonth.from(today).plusMonths(6),
@@ -134,18 +139,16 @@ public class CalendarActivity extends AppCompatActivity {
 
                 new Thread(() -> {
                     boolean hasTask = !taskDao.getTasksForUserAndDate(currentUserId, date.toString()).isEmpty();
-                    runOnUiThread(() -> {
-                        container.dotView.setVisibility(hasTask ? View.VISIBLE : View.GONE);
-                    });
+                    runOnUiThread(() -> container.dotView.setVisibility(hasTask ? View.VISIBLE : View.GONE));
                 }).start();
             }
         });
 
+        // Ajouter une tâche
         addTaskButton.setOnClickListener(v -> {
             String title = taskInput.getText().toString().trim();
             if (!title.isEmpty()) {
                 Task newTask = new Task(title, "", currentUserId, selected.toString());
-                newTask.date = selected.toString();
                 new Thread(() -> {
                     taskDao.insert(newTask);
                     runOnUiThread(() -> {
@@ -159,10 +162,9 @@ public class CalendarActivity extends AppCompatActivity {
 
         loadTasksForDate(selected.toString());
 
-        // ✅ Navigation bar handling
+        // ✅ Barre de navigation
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
         bottomNav.setSelectedItemId(R.id.nav_calendar);
-
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_tasks) {
@@ -176,9 +178,6 @@ public class CalendarActivity extends AppCompatActivity {
                 finish();
                 return true;
             } else if (id == R.id.nav_calendar) {
-                return true; // déjà ici
-            } else if (id == R.id.nav_profile) {
-                // Ajoute la redirection vers l’écran du profil si nécessaire
                 return true;
             }
             return false;
@@ -192,16 +191,16 @@ public class CalendarActivity extends AppCompatActivity {
                 dailyTasks.clear();
                 dailyTasks.addAll(tasks);
                 taskAdapter.notifyDataSetChanged();
-                calendarTaskList.setVisibility(tasks.isEmpty() ? RecyclerView.GONE : View.VISIBLE);
+                calendarTaskList.setVisibility(tasks.isEmpty() ? View.GONE : View.VISIBLE);
                 noTasksText.setVisibility(tasks.isEmpty() ? View.VISIBLE : View.GONE);
             });
         }).start();
     }
+
     @Override
     protected void onResume() {
         super.onResume();
-        loadTasksForDate(selected.toString()); // ✅ recharge les tâches du jour sélectionné
-        calendarView.notifyCalendarChanged(); // ✅ met à jour les points dans le calendrier
+        loadTasksForDate(selected.toString());
+        calendarView.notifyCalendarChanged();
     }
-
 }
