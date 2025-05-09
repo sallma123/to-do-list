@@ -70,11 +70,22 @@ public class CalendarActivity extends AppCompatActivity {
 
         taskDao = AppDatabase.getInstance(this).taskDao();
 
-        taskAdapter = new TaskAdapter(dailyTasks, task -> {}, task -> {
-            Intent intent = new Intent(CalendarActivity.this, TaskDetailActivity.class);
-            intent.putExtra("task_id", task.id);
-            startActivity(intent);
-        });
+        taskAdapter = new TaskAdapter(dailyTasks,
+                task -> {
+                    new Thread(() -> {
+                        taskDao.delete(task);
+                        runOnUiThread(() -> {
+                            loadTasksForDate(selected.toString());
+                            calendarView.notifyCalendarChanged(); // 🔄 rafraîchit les points
+                        });
+                    }).start();
+                },
+                task -> {
+                    Intent intent = new Intent(CalendarActivity.this, TaskDetailActivity.class);
+                    intent.putExtra("task_id", task.id);
+                    startActivity(intent);
+                });
+
 
         calendarTaskList.setLayoutManager(new LinearLayoutManager(this));
         calendarTaskList.setAdapter(taskAdapter);
