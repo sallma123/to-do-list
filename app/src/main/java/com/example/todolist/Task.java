@@ -9,9 +9,9 @@ public class Task {
     public int id;
     public String date;
     public int userId;
-
     public String title;
     public String description;
+    public boolean isDone = false; // ✅ Ajouté pour indiquer si la tâche est terminée
 
     public Task(String title, String description, int userId, String date) {
         this.title = title;

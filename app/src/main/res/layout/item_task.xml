@@ -10,24 +10,43 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:padding="1dp">
+
+        <!-- ✅ CheckBox à gauche -->
+        <CheckBox
+            android:id="@+id/taskCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:buttonTint="#878787" />
+
+        <!-- ✅ Poubelle à droite -->
 
         <TextView
             android:id="@+id/taskTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="7dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="4dp"
+            android:layout_toStartOf="@id/deleteTask"
+            android:layout_toEndOf="@id/taskCheckBox"
             android:text="Titre"
-            android:textSize="18sp"
-            android:textStyle="bold"
             android:textColor="#222222"
-            android:layout_alignParentStart="true"/>
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
         <ImageView
             android:id="@+id/deleteTask"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:src="@android:drawable/ic_menu_delete"
+            android:layout_alignTop="@id/taskTitle"
             android:layout_alignParentEnd="true"
-            android:contentDescription="Supprimer tâche" />
+            android:layout_marginTop="1dp"
+            android:layout_marginEnd="5dp"
+            android:contentDescription="Supprimer tâche"
+            android:src="@android:drawable/ic_menu_delete" />
     </RelativeLayout>
 </androidx.cardview.widget.CardView>
