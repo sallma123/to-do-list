@@ -3,6 +3,7 @@ package com.example.todolist;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -15,6 +16,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     private List<Task> taskList;
     private OnTaskDeleteListener deleteListener;
     private OnTaskClickListener clickListener;
+    private TaskDao taskDao;
 
     // Interfaces
     public interface OnTaskDeleteListener {
@@ -25,11 +27,11 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         void onTaskClick(Task task);
     }
 
-    // Nouveau constructeur à 2 callbacks
     public TaskAdapter(List<Task> taskList, OnTaskDeleteListener deleteListener, OnTaskClickListener clickListener) {
         this.taskList = taskList;
         this.deleteListener = deleteListener;
         this.clickListener = clickListener;
+        this.taskDao = AppDatabase.getInstance(null).taskDao(); // si besoin : passe le Context dans le constructeur
     }
 
     @Override
@@ -42,6 +44,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     public void onBindViewHolder(TaskViewHolder holder, int position) {
         Task task = taskList.get(position);
         holder.title.setText(task.getTitle());
+        holder.checkBox.setChecked(task.isDone);
 
         // Suppression
         holder.deleteIcon.setOnClickListener(v -> {
@@ -50,11 +53,17 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             }
         });
 
-        // Clic sur l'élément
+        // Navigation vers détail
         holder.itemView.setOnClickListener(v -> {
             if (clickListener != null) {
                 clickListener.onTaskClick(task);
             }
+        });
+
+        // Changement d’état de la CheckBox
+        holder.checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            task.isDone = isChecked;
+            new Thread(() -> taskDao.update(task)).start();
         });
     }
 
@@ -66,11 +75,13 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     public static class TaskViewHolder extends RecyclerView.ViewHolder {
         TextView title;
         ImageView deleteIcon;
+        CheckBox checkBox;
 
         public TaskViewHolder(View itemView) {
             super(itemView);
             title = itemView.findViewById(R.id.taskTitle);
             deleteIcon = itemView.findViewById(R.id.deleteTask);
+            checkBox = itemView.findViewById(R.id.taskCheckBox);
         }
     }
 }
