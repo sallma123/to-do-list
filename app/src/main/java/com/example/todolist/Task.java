@@ -13,15 +13,25 @@ public class Task {
     public String title;
     public String description;
 
-    public Task(String title, String description, int userId) {
+    public Task(String title, String description, int userId, String date) {
         this.title = title;
         this.description = description;
         this.userId = userId;
+        this.date = date;
     }
+
 
 
     public String getTitle() { return title; }
     public String getDescription() { return description; }
     public void setTitle(String title) { this.title = title; }
     public void setDescription(String description) { this.description = description; }
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
 }

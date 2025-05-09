@@ -26,6 +26,10 @@ public interface TaskDao {
     Task getTaskById(int id);
     @Query("SELECT * FROM task_table WHERE userId = :userId")
     List<Task> getTasksForUser(int userId);
+    @Query("SELECT * FROM task_table WHERE userId = :userId AND date = :date")
+    List<Task> getTasksForUserAndDate(int userId, String date);
 
+    @Query("SELECT id FROM task_table ORDER BY id DESC LIMIT 1")
+    int getLastTaskId();
 }
 

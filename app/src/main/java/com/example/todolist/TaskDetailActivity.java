@@ -5,11 +5,11 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.CheckBox;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -33,7 +33,6 @@ public class TaskDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task_detail);
 
-        // Récupérer les vues
         titleInput = findViewById(R.id.titleInput);
         descriptionInput = findViewById(R.id.descriptionInput);
         dateText = findViewById(R.id.dateText);
@@ -41,12 +40,10 @@ public class TaskDetailActivity extends AppCompatActivity {
         newSubTaskInput = findViewById(R.id.newSubTaskInput);
         addSubTaskButton = findViewById(R.id.addSubTaskButton);
 
-        // Initialisation DAO
         AppDatabase db = AppDatabase.getInstance(this);
         taskDao = db.taskDao();
         subTaskDao = db.subTaskDao();
 
-        // Récupérer ID de tâche
         int taskId = getIntent().getIntExtra("task_id", -1);
         if (taskId == -1) finish();
 
@@ -55,6 +52,8 @@ public class TaskDetailActivity extends AppCompatActivity {
             List<SubTask> subTasks = subTaskDao.getSubTasksForTask(taskId);
 
             runOnUiThread(() -> {
+                if (task == null) return;
+
                 titleInput.setText(task.getTitle());
                 descriptionInput.setText(task.getDescription());
                 if (task.date != null) {
@@ -64,9 +63,9 @@ public class TaskDetailActivity extends AppCompatActivity {
             });
         }).start();
 
-        // Sauvegarde en temps réel
         titleInput.addTextChangedListener(new SimpleWatcher(() -> updateTask(titleInput.getText().toString(), null, null)));
         descriptionInput.addTextChangedListener(new SimpleWatcher(() -> updateTask(null, descriptionInput.getText().toString(), null)));
+
         dateText.setOnClickListener(v -> showDatePicker());
 
         addSubTaskButton.setOnClickListener(v -> {
@@ -88,19 +87,22 @@ public class TaskDetailActivity extends AppCompatActivity {
     private void showDatePicker() {
         Calendar calendar = Calendar.getInstance();
         new DatePickerDialog(this, (view, year, month, day) -> {
-            String selectedDate = year + "-" + (month + 1) + "-" + day;
+            // ✅ Format standardisé avec zéro padding
+            String selectedDate = String.format("%04d-%02d-%02d", year, month + 1, day);
             dateText.setText(selectedDate);
             updateTask(null, null, selectedDate);
         }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
     }
 
+
     private void updateTask(String title, String desc, String date) {
-        if (task == null) return; // ✅ sécurité ajoutée
+        if (task == null) return;
 
         new Thread(() -> {
             if (title != null) task.setTitle(title);
             if (desc != null) task.setDescription(desc);
             if (date != null) task.date = date;
+
             taskDao.update(task);
         }).start();
     }
@@ -121,12 +123,15 @@ public class TaskDetailActivity extends AppCompatActivity {
         }
     }
 
-    // Pour auto-sauvegarder pendant l’écriture
     private static class SimpleWatcher implements TextWatcher {
         private final Runnable onChange;
-        public SimpleWatcher(Runnable onChange) { this.onChange = onChange; }
+        public SimpleWatcher(Runnable onChange) {
+            this.onChange = onChange;
+        }
         @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-        @Override public void onTextChanged(CharSequence s, int start, int before, int count) { onChange.run(); }
+        @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+            onChange.run();
+        }
         @Override public void afterTextChanged(Editable s) {}
     }
 }

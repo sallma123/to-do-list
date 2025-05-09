@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-import com.example.todolist.R; // ✅ celui-ci
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -13,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,33 +31,27 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // ✅ Récupérer l'ID utilisateur depuis LoginActivity
         currentUserId = getIntent().getIntExtra("user_id", -1);
         if (currentUserId == -1) {
-            finish(); // Quitte si aucun ID n'est transmis
+            finish();
             return;
         }
 
-        // Initialisation DAO
         taskDao = AppDatabase.getInstance(this).taskDao();
 
-        // Vues
         recyclerView = findViewById(R.id.recyclerView);
         taskInput = findViewById(R.id.taskInput);
         addTaskButton = findViewById(R.id.addTaskButton);
 
-        // Liste des tâches + adapter
         taskList = new ArrayList<>();
         taskAdapter = new TaskAdapter(taskList,
                 task -> {
-                    // Suppression
                     new Thread(() -> {
                         taskDao.delete(task);
                         runOnUiThread(this::loadTasksFromDatabase);
                     }).start();
                 },
                 task -> {
-                    // Clic simple → ouvrir la page détail
                     Intent intent = new Intent(MainActivity.this, TaskDetailActivity.class);
                     intent.putExtra("task_id", task.id);
                     startActivity(intent);
@@ -67,15 +61,15 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(taskAdapter);
 
-        // Charger les tâches existantes
         loadTasksFromDatabase();
 
-        // Ajouter une tâche
         addTaskButton.setOnClickListener(v -> {
             String title = taskInput.getText().toString().trim();
 
             if (!title.isEmpty()) {
-                Task newTask = new Task(title, "", currentUserId);
+                String today = LocalDate.now().toString(); // ✅ Date du jour
+                Task newTask = new Task(title, "", currentUserId, today);
+                newTask.date = today; // ✅ affectée ici
 
                 new Thread(() -> {
                     taskDao.insert(newTask);
@@ -87,9 +81,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // ✅ Gestion de la barre de navigation en bas
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
-        // 👇 Définit "Tasks" comme sélectionné par défaut
         bottomNav.setSelectedItemId(R.id.nav_tasks);
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
@@ -101,7 +93,9 @@ public class MainActivity extends AppCompatActivity {
             } else if (id == R.id.nav_tasks) {
                 return true;
             } else if (id == R.id.nav_calendar) {
-                Toast.makeText(this, "Calendrier à venir", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(MainActivity.this, CalendarActivity.class);
+                intent.putExtra("user_id", currentUserId);
+                startActivity(intent);
                 return true;
             } else if (id == R.id.nav_profile) {
                 Toast.makeText(this, "Profil à venir", Toast.LENGTH_SHORT).show();
@@ -112,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-        private void loadTasksFromDatabase() {
+    private void loadTasksFromDatabase() {
         new Thread(() -> {
             List<Task> tasks = taskDao.getTasksForUser(currentUserId);
             runOnUiThread(() -> {
@@ -126,6 +120,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        loadTasksFromDatabase(); // recharge les données au retour
+        loadTasksFromDatabase();
     }
 }
