@@ -197,4 +197,11 @@ public class CalendarActivity extends AppCompatActivity {
             });
         }).start();
     }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadTasksForDate(selected.toString()); // ✅ recharge les tâches du jour sélectionné
+        calendarView.notifyCalendarChanged(); // ✅ met à jour les points dans le calendrier
+    }
+
 }
