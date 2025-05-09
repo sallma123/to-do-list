@@ -93,7 +93,7 @@ public class CalendarActivity extends AppCompatActivity {
         calendarView.setup(
                 YearMonth.from(today).minusMonths(6),
                 YearMonth.from(today).plusMonths(6),
-                DayOfWeek.MONDAY
+                DayOfWeek.SUNDAY
         );
         calendarView.scrollToDate(today);
         calendarTitle.setText(today.format(formatter));
