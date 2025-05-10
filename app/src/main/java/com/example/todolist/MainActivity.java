@@ -101,7 +101,10 @@ public class MainActivity extends AppCompatActivity {
                 finish();
                 return true;
             } else if (id == R.id.nav_profile) {
-                Toast.makeText(this, "Profil à venir", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+                intent.putExtra("user_id", currentUserId);
+                startActivity(intent);
+                finish();
                 return true;
             }
             return false;

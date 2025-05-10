@@ -29,7 +29,9 @@ public class Task {
     public String getDate() {
         return date;
     }
-
+    public boolean isDone() {
+        return isDone;
+    }
     public void setDate(String date) {
         this.date = date;
     }

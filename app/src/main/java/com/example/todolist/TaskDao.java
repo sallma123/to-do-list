@@ -15,7 +15,6 @@ public interface TaskDao {
     @Update
     void update(Task task);
 
-
     @Query("SELECT * FROM task_table")
     List<Task> getAllTasks();
 
@@ -28,6 +27,8 @@ public interface TaskDao {
     List<Task> getTasksForUser(int userId);
     @Query("SELECT * FROM task_table WHERE userId = :userId AND date = :date")
     List<Task> getTasksForUserAndDate(int userId, String date);
+    @Query("SELECT * FROM user_table WHERE id = :userId LIMIT 1")
+    User getUserById(int userId);
 
 
 }

@@ -184,6 +184,12 @@ public class CalendarActivity extends AppCompatActivity {
                 return true;
             } else if (id == R.id.nav_calendar) {
                 return true;
+            }else if (id == R.id.nav_profile) {
+                Intent intent = new Intent(CalendarActivity.this, ProfileActivity.class);
+                intent.putExtra("user_id", currentUserId);
+                startActivity(intent);
+                finish();
+                return true;
             }
             return false;
         });

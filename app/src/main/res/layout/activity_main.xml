@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F8F8F8"
-    android:padding="8dp">
+>
 
     <!-- Liste des tâches -->
     <androidx.recyclerview.widget.RecyclerView
@@ -45,7 +45,7 @@
             android:text="Ajouter"
             android:backgroundTint="#FF4081"
             android:textColor="#FFFFFF"
-            android:elevation="2dp" />
+            android:elevation="10dp" />
     </LinearLayout>
 
     <!-- Bottom Navigation Bar -->

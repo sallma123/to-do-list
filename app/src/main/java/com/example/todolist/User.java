@@ -8,6 +8,7 @@ public class User {
     public int id; // La clé primaire de l'entité
 
     public String name;
+
     public String email;
     public String password;
 
@@ -21,7 +22,9 @@ public class User {
     public String getEmail() {
         return email;
     }
-
+    public String getName() {
+        return name;
+    }
     public String getPassword() {
         return password;
     }

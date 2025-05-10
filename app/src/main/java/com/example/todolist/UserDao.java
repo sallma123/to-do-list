@@ -16,4 +16,7 @@ public interface UserDao {
 
     @Query("SELECT * FROM user_table")
     List<User> getAllUsers(); // Méthode pour récupérer tous les utilisateurs
+    @Query("SELECT * FROM user_table WHERE id = :userId LIMIT 1")
+    User getUserById(int userId);
+
 }
