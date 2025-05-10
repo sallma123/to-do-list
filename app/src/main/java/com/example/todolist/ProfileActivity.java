@@ -46,8 +46,9 @@ public class ProfileActivity extends AppCompatActivity {
         }
 
         changePasswordButton.setOnClickListener(v -> {
-            // À compléter : ouvrir une boîte de dialogue pour changer le mot de passe
-            Toast.makeText(this, "Fonction à implémenter", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(ProfileActivity.this, ChangePasswordActivity.class);
+            intent.putExtra("user_id", userId);
+            startActivity(intent);
         });
 
         // ✅ Barre de navigation

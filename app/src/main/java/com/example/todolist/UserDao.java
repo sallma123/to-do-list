@@ -3,6 +3,7 @@ package com.example.todolist;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.Update;
 
 import java.util.List;
 
@@ -10,6 +11,8 @@ import java.util.List;
 public interface UserDao {
     @Insert
     void insert(User user);
+    @Update
+    void update(User user);
 
     @Query("SELECT * FROM user_table WHERE email = :email AND password = :password LIMIT 1")
     User findByEmailAndPassword(String email, String password); // Méthode pour trouver un utilisateur par email et mot de passe
