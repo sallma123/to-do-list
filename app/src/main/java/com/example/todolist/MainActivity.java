@@ -14,6 +14,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -129,6 +130,12 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
+            // ✅ Tri croissant par date
+            Comparator<Task> byDate = Comparator.comparing(task -> LocalDate.parse(task.date));
+            previous.sort(byDate);
+            future.sort(byDate);
+            completed.sort(byDate);
+
             if (!previous.isEmpty()) {
                 list.add("Previous");
                 list.addAll(previous);
@@ -151,6 +158,7 @@ public class MainActivity extends AppCompatActivity {
             });
         }).start();
     }
+
 
     @Override
     protected void onResume() {

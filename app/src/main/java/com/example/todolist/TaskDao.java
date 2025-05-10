@@ -29,5 +29,6 @@ public interface TaskDao {
     @Query("SELECT * FROM task_table WHERE userId = :userId AND date = :date")
     List<Task> getTasksForUserAndDate(int userId, String date);
 
+
 }
 
