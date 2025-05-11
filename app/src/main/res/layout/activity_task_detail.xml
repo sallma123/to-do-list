@@ -14,7 +14,7 @@
             android:id="@+id/titleInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Titre de la tâche"
+            android:hint="Task title"
             android:textSize="18sp"
             android:padding="12dp"
             android:background="@android:drawable/editbox_background" />
@@ -35,7 +35,7 @@
             android:id="@+id/dateText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Choisir une date"
+            android:text="Select a date"
             android:textSize="16sp"
             android:textColor="#0060C3"
             android:padding="12dp"
@@ -45,7 +45,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Sous-tâches"
+            android:text="Sub-tasks"
             android:textStyle="bold"
             android:textSize="16sp"
             android:layout_marginTop="16dp"/>
@@ -70,14 +70,14 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="Nouvelle sous-tâche"
+                android:hint="New sub-task"
                 android:padding="12dp" />
 
             <Button
                 android:id="@+id/addSubTaskButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ajouter" />
+                android:text="Add" />
         </LinearLayout>
 
     </LinearLayout>

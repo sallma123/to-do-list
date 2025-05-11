@@ -33,7 +33,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:hint="Ajouter une tâche..."
+            android:hint="Input new task here"
             android:background="@android:color/transparent"
             android:padding="13dp"
             android:textSize="16sp" />
@@ -42,7 +42,7 @@
             android:id="@+id/addTaskButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Ajouter"
+            android:text="Add"
             android:backgroundTint="#FF4081"
             android:textColor="#FFFFFF"
             android:elevation="10dp" />

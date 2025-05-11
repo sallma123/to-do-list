@@ -5,51 +5,37 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <!-- Email input -->
     <EditText
         android:id="@+id/loginEmail"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Adresse e-mail ou numéro de tél."
+        android:hint="Email address"
         android:inputType="textEmailAddress"
         android:padding="16dp"
         />
 
-    <!-- Password input -->
     <EditText
         android:id="@+id/loginPassword"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Mot de passe"
+        android:hint="Password"
         android:inputType="textPassword"
         android:padding="16dp"/>
 
-    <!-- Login button -->
     <Button
         android:id="@+id/loginButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Se connecter"
+        android:text="Log in"
         android:background="#0060C3"
         android:textColor="#FFFFFF"
         />
 
-    <!-- Forgot password link -->
-    <TextView
-        android:id="@+id/forgotPassword"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Mot de passe oublié ?"
-        android:textColor="#0000FF"
-        android:layout_marginTop="8dp"
-        />
-
-    <!-- Sign up link -->
     <Button
         android:id="@+id/signUpButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Créer un nouveau compte"
+        android:text="Create a new account"
         android:background="#0060C3"
         android:textColor="#FFFFFF"
         android:layout_marginTop="16dp"
