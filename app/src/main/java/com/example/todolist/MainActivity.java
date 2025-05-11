@@ -1,6 +1,7 @@
 package com.example.todolist;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -32,40 +33,47 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Récupération de l'identifiant utilisateur depuis l'intent
         currentUserId = getIntent().getIntExtra("user_id", -1);
         if (currentUserId == -1) {
-            finish();
+            finish(); // Aucun utilisateur connecté
             return;
         }
 
+        // Accès à la base de données (DAO)
         taskDao = AppDatabase.getInstance(this).taskDao();
 
+        // Initialisation des vues
         recyclerView = findViewById(R.id.recyclerView);
         taskInput = findViewById(R.id.taskInput);
         addTaskButton = findViewById(R.id.addTaskButton);
 
+        // Initialisation de la liste affichée
         displayList = new ArrayList<>();
         taskAdapter = new TaskAdapter(this, displayList,
                 task -> {
+                    // Supprimer une tâche
                     new Thread(() -> {
                         taskDao.delete(task);
                         runOnUiThread(this::loadTasksFromDatabase);
                     }).start();
                 },
                 task -> {
+                    // Afficher les détails d'une tâche
                     Intent intent = new Intent(MainActivity.this, TaskDetailActivity.class);
                     intent.putExtra("task_id", task.id);
                     startActivity(intent);
                 },
-                this::loadTasksFromDatabase // ✅ appelé quand on coche ou décoche
+                this::loadTasksFromDatabase // Mise à jour si tâche cochée
         );
-
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(taskAdapter);
 
+        // Charger les tâches existantes
         loadTasksFromDatabase();
 
+        // Ajouter une nouvelle tâche
         addTaskButton.setOnClickListener(v -> {
             String title = taskInput.getText().toString().trim();
             if (!title.isEmpty()) {
@@ -82,25 +90,32 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // ✅ Gestion de la barre de navigation
+        // Gestion du menu de navigation
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
-        bottomNav.setSelectedItemId(R.id.nav_tasks); // Définit l'onglet sélectionné
+        bottomNav.setSelectedItemId(R.id.nav_tasks); // Onglet sélectionné
 
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_tasks) {
-                return true; // Déjà sur cette page
+                return true; // Déjà sur cet écran
             } else if (id == R.id.nav_calendar) {
+                // Aller à l’écran calendrier
                 Intent intent = new Intent(MainActivity.this, CalendarActivity.class);
                 intent.putExtra("user_id", currentUserId);
                 startActivity(intent);
                 finish();
                 return true;
             } else if (id == R.id.action_logout) {
-                startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                // Déconnexion → on vide la session
+                SharedPreferences prefs = getSharedPreferences("session", MODE_PRIVATE);
+                prefs.edit().clear().apply(); // Supprimer user_id
+
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                startActivity(intent);
                 finish();
                 return true;
             } else if (id == R.id.nav_profile) {
+                // Aller au profil
                 Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
                 intent.putExtra("user_id", currentUserId);
                 startActivity(intent);
@@ -111,6 +126,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    //Charger les tâches depuis la base de données pour l’utilisateur courant.
     private void loadTasksFromDatabase() {
         new Thread(() -> {
             List<Task> all = taskDao.getTasksForUser(currentUserId);
@@ -139,6 +155,7 @@ public class MainActivity extends AppCompatActivity {
             future.sort(byDate);
             completed.sort(byDate);
 
+            // Trie les tâches en : passées, à venir, complétées.
             if (!previous.isEmpty()) {
                 list.add("Previous");
                 list.addAll(previous);
@@ -154,6 +171,7 @@ public class MainActivity extends AppCompatActivity {
                 list.addAll(completed);
             }
 
+            // Mise à jour de l’interface
             runOnUiThread(() -> {
                 displayList.clear();
                 displayList.addAll(list);
@@ -162,10 +180,10 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
-
     @Override
     protected void onResume() {
         super.onResume();
+        // Rechargement des tâches à chaque retour sur l’écran
         loadTasksFromDatabase();
     }
 }
