@@ -77,7 +77,9 @@
                 android:id="@+id/addSubTaskButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Add" />
+                android:text="Add"
+                android:backgroundTint="#FF4081"
+                android:textColor="#FFFFFF"/>
         </LinearLayout>
 
     </LinearLayout>
