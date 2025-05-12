@@ -16,10 +16,7 @@ import com.example.todolist.db.AppDatabase;
 import java.util.List;
 import java.util.concurrent.Executors;
 
-/**
- * ViewModel pour ProfileActivity.
- * Gère les données utilisateur et statistiques sans accès direct à Room dans l'UI.
- */
+//Gère les données utilisateur et statistiques sans accès direct à Room dans l'UI.
 public class ProfileViewModel extends AndroidViewModel {
 
     private final UserDao userDao;

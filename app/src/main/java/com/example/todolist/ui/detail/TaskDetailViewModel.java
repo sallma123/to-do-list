@@ -1,4 +1,4 @@
-package com.example.todolist.ui.datail;
+package com.example.todolist.ui.detail;
 
 import android.app.Application;
 
@@ -16,10 +16,7 @@ import com.example.todolist.db.AppDatabase;
 import java.util.List;
 import java.util.concurrent.Executors;
 
-/**
- * ViewModel pour TaskDetailActivity.
- * Gère la tâche principale et ses sous-tâches via LiveData.
- */
+//Gère la tâche principale et ses sous-tâches via LiveData.
 public class TaskDetailViewModel extends AndroidViewModel {
 
     private final TaskDao taskDao;

@@ -21,7 +21,7 @@ import com.example.todolist.ui.main.MainActivity;
 import com.example.todolist.ui.profile.ProfileActivity;
 import com.example.todolist.R;
 import com.example.todolist.adapter.TaskAdapter;
-import com.example.todolist.ui.datail.TaskDetailActivity;
+import com.example.todolist.ui.detail.TaskDetailActivity;
 import com.example.todolist.data.model.Task;
 import com.example.todolist.db.AppDatabase;
 import com.google.android.material.bottomnavigation.BottomNavigationView;

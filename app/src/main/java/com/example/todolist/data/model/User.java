@@ -1,16 +1,17 @@
 package com.example.todolist.data.model;
+
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "user_table") // Nom de la table dans la base de données
+// Entité représentant un utilisateur (table: user_table)
+@Entity(tableName = "user_table")
 public class User {
+
     @PrimaryKey(autoGenerate = true)
-    public int id; // La clé primaire de l'entité
-
-    public String name;
-
-    public String email;
-    public String password;
+    public int id;          // Identifiant unique de l'utilisateur
+    public String name;     // Nom de l'utilisateur
+    public String email;    // Adresse email (utilisée pour la connexion)
+    public String password; // Mot de passe
 
     // Constructeur
     public User(String name, String email, String password) {
@@ -19,16 +20,11 @@ public class User {
         this.password = password;
     }
 
-    public String getEmail() {
-        return email;
-    }
-    public String getName() {
-        return name;
-    }
-    public String getPassword() {
-        return password;
-    }
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    // Getters
+    public String getName() { return name; }
+    public String getEmail() { return email; }
+    public String getPassword() { return password; }
+
+    // Setters
+    public void setPassword(String password) { this.password = password; }
 }

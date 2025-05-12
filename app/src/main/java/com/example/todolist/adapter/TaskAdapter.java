@@ -17,16 +17,23 @@ import com.example.todolist.db.AppDatabase;
 
 import java.util.List;
 
+/**
+  Adapter personnalisé pour l'affichage d'une liste de tâches avec des en-têtes.
+  Permet de gérer les interactions utilisateur : suppression, clic, et mise à jour de l'état.
+ */
 public class TaskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
+    // Types de vues : en-tête ou tâche
     private static final int TYPE_HEADER = 0;
     private static final int TYPE_TASK = 1;
-    private final OnTaskStatusChangeListener statusChangeListener;
+
     private final List<Object> taskList;
     private final OnTaskDeleteListener deleteListener;
     private final OnTaskClickListener clickListener;
+    private final OnTaskStatusChangeListener statusChangeListener;
     private final TaskDao taskDao;
 
+    // Interfaces pour la communication avec l'activité
     public interface OnTaskStatusChangeListener {
         void onStatusChanged();
     }
@@ -50,6 +57,7 @@ public class TaskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         this.taskDao = AppDatabase.getInstance(context).taskDao();
     }
 
+    // Détermine le type de vue à afficher à une position donnée
     @Override
     public int getItemViewType(int position) {
         return taskList.get(position) instanceof String ? TYPE_HEADER : TYPE_TASK;
@@ -70,23 +78,29 @@ public class TaskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof HeaderViewHolder) {
+            // Affichage du titre de section (ex: "Previous", "Future", "Completed")
             ((HeaderViewHolder) holder).headerText.setText((String) taskList.get(position));
         } else if (holder instanceof TaskViewHolder) {
             Task task = (Task) taskList.get(position);
             TaskViewHolder th = (TaskViewHolder) holder;
 
-            th.checkBox.setOnCheckedChangeListener(null); // Important: éviter les déclenchements multiples
+            // Empêche la réexécution du listener lors du recyclage
+            th.checkBox.setOnCheckedChangeListener(null);
+
             th.title.setText(task.getTitle());
             th.checkBox.setChecked(task.isDone);
 
+            // Suppression de la tâche
             th.deleteIcon.setOnClickListener(v -> {
                 if (deleteListener != null) deleteListener.onTaskDelete(task);
             });
 
+            // Navigation vers les détails de la tâche
             th.itemView.setOnClickListener(v -> {
                 if (clickListener != null) clickListener.onTaskClick(task);
             });
 
+            // Coche / décoche la tâche
             th.checkBox.setOnCheckedChangeListener((button, isChecked) -> {
                 task.isDone = isChecked;
                 new Thread(() -> {
@@ -106,6 +120,7 @@ public class TaskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         return taskList.size();
     }
 
+    // ViewHolder pour les tâches
     public static class TaskViewHolder extends RecyclerView.ViewHolder {
         TextView title;
         ImageView deleteIcon;
@@ -119,6 +134,7 @@ public class TaskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
+    // ViewHolder pour les titres de section
     public static class HeaderViewHolder extends RecyclerView.ViewHolder {
         TextView headerText;
 

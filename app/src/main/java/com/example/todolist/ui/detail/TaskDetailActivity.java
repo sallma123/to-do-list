@@ -1,4 +1,4 @@
-package com.example.todolist.ui.datail;
+package com.example.todolist.ui.detail;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;

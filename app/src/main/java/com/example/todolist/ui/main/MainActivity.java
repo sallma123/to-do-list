@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.todolist.ui.profile.ProfileActivity;
 import com.example.todolist.R;
 import com.example.todolist.adapter.TaskAdapter;
-import com.example.todolist.ui.datail.TaskDetailActivity;
+import com.example.todolist.ui.detail.TaskDetailActivity;
 import com.example.todolist.network.WeatherApiService;
 import com.example.todolist.network.WeatherClient;
 import com.example.todolist.network.WeatherResponse;

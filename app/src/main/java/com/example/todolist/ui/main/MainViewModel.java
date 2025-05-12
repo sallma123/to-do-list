@@ -17,10 +17,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Executors;
 
-/**
- * ViewModel de MainActivity.
- * Gère les données (liste de tâches formatée avec sections) de manière indépendante de l'UI.
- */
+//Gère les données (liste de tâches formatée avec sections) de manière indépendante de l'UI
 public class MainViewModel extends AndroidViewModel {
 
     private final TaskDao taskDao;

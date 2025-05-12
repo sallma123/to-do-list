@@ -14,10 +14,7 @@ import com.example.todolist.db.AppDatabase;
 import java.util.List;
 import java.util.concurrent.Executors;
 
-/**
- * ViewModel pour CalendarActivity.
- * Gère la récupération des tâches pour une date spécifique.
- */
+//Gère la récupération des tâches pour une date spécifique.
 public class CalendarViewModel extends AndroidViewModel {
 
     private final TaskDao taskDao;
