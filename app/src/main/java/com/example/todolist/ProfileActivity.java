@@ -7,21 +7,17 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-
-import java.util.List;
-import java.util.concurrent.Executors;
 
 public class ProfileActivity extends AppCompatActivity {
 
     private TextView emailText, nameText, totalTasks, completionRate;
     private Button changePasswordButton;
 
-    private AppDatabase db;
-    private UserDao userDao;
-    private TaskDao taskDao;
-    private int userId; // à recevoir via Intent
+    private int userId;
+    private ProfileViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,18 +31,33 @@ public class ProfileActivity extends AppCompatActivity {
         completionRate = findViewById(R.id.completionRate);
         changePasswordButton = findViewById(R.id.changePasswordButton);
 
-        // Accès à la base de données
-        db = AppDatabase.getInstance(this);
-        userDao = db.userDao();
-        taskDao = db.taskDao();
-
         // Récupérer l'ID utilisateur depuis l'Intent
         userId = getIntent().getIntExtra("user_id", -1);
-
-        if (userId != -1) {
-            loadUserInfo();     // Charger l'email et le nom
-            loadTaskStats();    // Charger les statistiques
+        if (userId == -1) {
+            finish();
+            return;
         }
+
+        // Initialiser ViewModel
+        viewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
+
+        // Observer les données utilisateur
+        viewModel.getUserLiveData().observe(this, user -> {
+            if (user != null) {
+                emailText.setText("Email: " + user.getEmail());
+                nameText.setText("Name: " + (user.getName() != null ? user.getName() : "(not set)"));
+            }
+        });
+
+        // Observer les statistiques
+        viewModel.getStatsLiveData().observe(this, stats -> {
+            totalTasks.setText(String.valueOf(stats.total));
+            completionRate.setText(stats.completionRate + "%");
+        });
+
+        // Charger les données
+        viewModel.loadUser(userId);
+        viewModel.loadStats(userId);
 
         // Bouton pour changer le mot de passe
         changePasswordButton.setOnClickListener(v -> {
@@ -57,13 +68,13 @@ public class ProfileActivity extends AppCompatActivity {
 
         // Barre de navigation
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
-        bottomNav.setSelectedItemId(R.id.nav_profile); // Onglet actif
+        bottomNav.setSelectedItemId(R.id.nav_profile);
 
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
 
             if (id == R.id.nav_profile) {
-                return true; // Déjà sur cette page
+                return true;
             } else if (id == R.id.nav_tasks) {
                 Intent intent = new Intent(ProfileActivity.this, MainActivity.class);
                 intent.putExtra("user_id", userId);
@@ -77,10 +88,8 @@ public class ProfileActivity extends AppCompatActivity {
                 finish();
                 return true;
             } else if (id == R.id.action_logout) {
-                // Déconnexion : on efface la session
                 SharedPreferences prefs = getSharedPreferences("session", MODE_PRIVATE);
                 prefs.edit().clear().apply();
-
                 Intent intent = new Intent(ProfileActivity.this, LoginActivity.class);
                 startActivity(intent);
                 finish();
@@ -88,37 +97,6 @@ public class ProfileActivity extends AppCompatActivity {
             }
 
             return false;
-        });
-    }
-
-    //Récupère les infos de l'utilisateur (email, nom) depuis Room
-    private void loadUserInfo() {
-        Executors.newSingleThreadExecutor().execute(() -> {
-            User user = userDao.getUserById(userId);
-            runOnUiThread(() -> {
-                if (user != null) {
-                    emailText.setText("Email: " + user.getEmail());
-                    nameText.setText("Name: " + (user.getName() != null ? user.getName() : "(not set)"));
-                }
-            });
-        });
-    }
-
-    //Calcule les statistiques de l'utilisateur (total de tâches et % complétées)
-    private void loadTaskStats() {
-        Executors.newSingleThreadExecutor().execute(() -> {
-            List<Task> tasks = taskDao.getTasksForUser(userId);
-            int total = tasks.size();
-            int completed = 0;
-            for (Task task : tasks) {
-                if (task.isDone()) completed++;
-            }
-
-            int percentage = total == 0 ? 0 : (completed * 100 / total);
-            runOnUiThread(() -> {
-                totalTasks.setText(String.valueOf(total));
-                completionRate.setText(percentage + "%");
-            });
         });
     }
 }

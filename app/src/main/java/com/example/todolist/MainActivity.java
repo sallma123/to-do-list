@@ -7,9 +7,9 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -17,7 +17,6 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 import retrofit2.Call;
@@ -31,9 +30,10 @@ public class MainActivity extends AppCompatActivity {
     private List<Object> displayList;
     private Button addTaskButton;
     private EditText taskInput;
-    private TaskDao taskDao;
-    private int currentUserId;
     private TextView weatherText;
+
+    private int currentUserId;
+    private MainViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,22 +47,19 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // DAO
-        taskDao = AppDatabase.getInstance(this).taskDao();
-
-        // Vues
+        // Initialisation des vues
         weatherText = findViewById(R.id.weatherText);
         recyclerView = findViewById(R.id.recyclerView);
         taskInput = findViewById(R.id.taskInput);
         addTaskButton = findViewById(R.id.addTaskButton);
 
-        // Adapter
+        // Initialisation de la liste et de l'adapter
         displayList = new ArrayList<>();
         taskAdapter = new TaskAdapter(this, displayList,
                 task -> {
                     new Thread(() -> {
-                        taskDao.delete(task);
-                        runOnUiThread(this::loadTasksFromDatabase);
+                        AppDatabase.getInstance(this).taskDao().delete(task);
+                        viewModel.loadTasksForUser(currentUserId);
                     }).start();
                 },
                 task -> {
@@ -70,14 +67,22 @@ public class MainActivity extends AppCompatActivity {
                     intent.putExtra("task_id", task.id);
                     startActivity(intent);
                 },
-                this::loadTasksFromDatabase
+                () -> viewModel.loadTasksForUser(currentUserId)
         );
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(taskAdapter);
 
-        // Charger les tâches
-        loadTasksFromDatabase();
+        // Initialisation du ViewModel
+        viewModel = new ViewModelProvider(this).get(MainViewModel.class);
+        viewModel.getTasksLiveData().observe(this, tasks -> {
+            displayList.clear();
+            displayList.addAll(tasks);
+            taskAdapter.notifyDataSetChanged();
+        });
+
+        // Charger les tâches via ViewModel
+        viewModel.loadTasksForUser(currentUserId);
 
         // Ajouter une tâche
         addTaskButton.setOnClickListener(v -> {
@@ -87,16 +92,16 @@ public class MainActivity extends AppCompatActivity {
                 newTask.isDone = false;
 
                 new Thread(() -> {
-                    taskDao.insert(newTask);
+                    AppDatabase.getInstance(this).taskDao().insert(newTask);
                     runOnUiThread(() -> {
                         taskInput.setText("");
-                        loadTasksFromDatabase();
+                        viewModel.loadTasksForUser(currentUserId);
                     });
                 }).start();
             }
         });
 
-        // Appel API météo pour Rabat
+        // Appel météo
         WeatherApiService service = WeatherClient.getService();
         service.getWeather("Rabat,MA", "metric", "ecd9a22ca89fc0b7ca2a6e517bac6dec")
                 .enqueue(new Callback<WeatherResponse>() {
@@ -115,12 +120,11 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<WeatherResponse> call, Throwable t) {
                         Log.e("WEATHER_API", "Erreur Retrofit : " + t.getMessage());
-                        t.printStackTrace(); 
+                        weatherText.setText("Error fetching weather.");
                     }
-
                 });
 
-        // Barre de navigation
+        // Navigation
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
         bottomNav.setSelectedItemId(R.id.nav_tasks);
 
@@ -152,57 +156,9 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void loadTasksFromDatabase() {
-        new Thread(() -> {
-            List<Task> all = taskDao.getTasksForUser(currentUserId);
-            List<Object> list = new ArrayList<>();
-
-            LocalDate today = LocalDate.now();
-            List<Task> previous = new ArrayList<>();
-            List<Task> future = new ArrayList<>();
-            List<Task> completed = new ArrayList<>();
-
-            for (Task t : all) {
-                if (t.date == null) continue;
-                LocalDate taskDate = LocalDate.parse(t.date);
-                if (t.isDone) {
-                    completed.add(t);
-                } else if (taskDate.isBefore(today)) {
-                    previous.add(t);
-                } else {
-                    future.add(t);
-                }
-            }
-
-            Comparator<Task> byDate = Comparator.comparing(task -> LocalDate.parse(task.date));
-            previous.sort(byDate);
-            future.sort(byDate);
-            completed.sort(byDate);
-
-            if (!previous.isEmpty()) {
-                list.add("Previous");
-                list.addAll(previous);
-            }
-            if (!future.isEmpty()) {
-                list.add("Future");
-                list.addAll(future);
-            }
-            if (!completed.isEmpty()) {
-                list.add("Completed");
-                list.addAll(completed);
-            }
-
-            runOnUiThread(() -> {
-                displayList.clear();
-                displayList.addAll(list);
-                taskAdapter.notifyDataSetChanged();
-            });
-        }).start();
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
-        loadTasksFromDatabase();
+        viewModel.loadTasksForUser(currentUserId);
     }
 }
