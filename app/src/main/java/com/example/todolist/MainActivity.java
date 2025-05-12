@@ -3,8 +3,10 @@ package com.example.todolist;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,6 +20,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class MainActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
@@ -27,53 +33,53 @@ public class MainActivity extends AppCompatActivity {
     private EditText taskInput;
     private TaskDao taskDao;
     private int currentUserId;
+    private TextView weatherText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Récupération de l'identifiant utilisateur depuis l'intent
+        // Récupération de l'identifiant utilisateur
         currentUserId = getIntent().getIntExtra("user_id", -1);
         if (currentUserId == -1) {
-            finish(); // Aucun utilisateur connecté
+            finish();
             return;
         }
 
-        // Accès à la base de données (DAO)
+        // DAO
         taskDao = AppDatabase.getInstance(this).taskDao();
 
-        // Initialisation des vues
+        // Vues
+        weatherText = findViewById(R.id.weatherText);
         recyclerView = findViewById(R.id.recyclerView);
         taskInput = findViewById(R.id.taskInput);
         addTaskButton = findViewById(R.id.addTaskButton);
 
-        // Initialisation de la liste affichée
+        // Adapter
         displayList = new ArrayList<>();
         taskAdapter = new TaskAdapter(this, displayList,
                 task -> {
-                    // Supprimer une tâche
                     new Thread(() -> {
                         taskDao.delete(task);
                         runOnUiThread(this::loadTasksFromDatabase);
                     }).start();
                 },
                 task -> {
-                    // Afficher les détails d'une tâche
                     Intent intent = new Intent(MainActivity.this, TaskDetailActivity.class);
                     intent.putExtra("task_id", task.id);
                     startActivity(intent);
                 },
-                this::loadTasksFromDatabase // Mise à jour si tâche cochée
+                this::loadTasksFromDatabase
         );
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(taskAdapter);
 
-        // Charger les tâches existantes
+        // Charger les tâches
         loadTasksFromDatabase();
 
-        // Ajouter une nouvelle tâche
+        // Ajouter une tâche
         addTaskButton.setOnClickListener(v -> {
             String title = taskInput.getText().toString().trim();
             if (!title.isEmpty()) {
@@ -90,32 +96,52 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Gestion du menu de navigation
+        // Appel API météo pour Rabat
+        WeatherApiService service = WeatherClient.getService();
+        service.getWeather("Rabat,MA", "metric", "ecd9a22ca89fc0b7ca2a6e517bac6dec")
+                .enqueue(new Callback<WeatherResponse>() {
+                    @Override
+                    public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            double temp = response.body().main.temp;
+                            String description = response.body().weather.get(0).description;
+                            String display = String.format("Rabat: %.0f°C, %s", temp, description);
+                            weatherText.setText(display);
+                        } else {
+                            weatherText.setText("Unable to load weather.");
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<WeatherResponse> call, Throwable t) {
+                        Log.e("WEATHER_API", "Erreur Retrofit : " + t.getMessage());
+                        t.printStackTrace(); 
+                    }
+
+                });
+
+        // Barre de navigation
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
-        bottomNav.setSelectedItemId(R.id.nav_tasks); // Onglet sélectionné
+        bottomNav.setSelectedItemId(R.id.nav_tasks);
 
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_tasks) {
-                return true; // Déjà sur cet écran
+                return true;
             } else if (id == R.id.nav_calendar) {
-                // Aller à l’écran calendrier
                 Intent intent = new Intent(MainActivity.this, CalendarActivity.class);
                 intent.putExtra("user_id", currentUserId);
                 startActivity(intent);
                 finish();
                 return true;
             } else if (id == R.id.action_logout) {
-                // Déconnexion → on vide la session
                 SharedPreferences prefs = getSharedPreferences("session", MODE_PRIVATE);
-                prefs.edit().clear().apply(); // Supprimer user_id
-
+                prefs.edit().clear().apply();
                 Intent intent = new Intent(MainActivity.this, LoginActivity.class);
                 startActivity(intent);
                 finish();
                 return true;
             } else if (id == R.id.nav_profile) {
-                // Aller au profil
                 Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
                 intent.putExtra("user_id", currentUserId);
                 startActivity(intent);
@@ -126,7 +152,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    //Charger les tâches depuis la base de données pour l’utilisateur courant.
     private void loadTasksFromDatabase() {
         new Thread(() -> {
             List<Task> all = taskDao.getTasksForUser(currentUserId);
@@ -149,29 +174,24 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-            // ✅ Tri croissant par date
             Comparator<Task> byDate = Comparator.comparing(task -> LocalDate.parse(task.date));
             previous.sort(byDate);
             future.sort(byDate);
             completed.sort(byDate);
 
-            // Trie les tâches en : passées, à venir, complétées.
             if (!previous.isEmpty()) {
                 list.add("Previous");
                 list.addAll(previous);
             }
-
             if (!future.isEmpty()) {
                 list.add("Future");
                 list.addAll(future);
             }
-
             if (!completed.isEmpty()) {
                 list.add("Completed");
                 list.addAll(completed);
             }
 
-            // Mise à jour de l’interface
             runOnUiThread(() -> {
                 displayList.clear();
                 displayList.addAll(list);
@@ -183,7 +203,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Rechargement des tâches à chaque retour sur l’écran
         loadTasksFromDatabase();
     }
 }
