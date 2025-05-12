@@ -1,10 +1,17 @@
-package com.example.todolist;
+package com.example.todolist.db;
 
 import android.content.Context;
 
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
+
+import com.example.todolist.data.dao.SubTaskDao;
+import com.example.todolist.data.dao.TaskDao;
+import com.example.todolist.data.dao.UserDao;
+import com.example.todolist.data.model.SubTask;
+import com.example.todolist.data.model.Task;
+import com.example.todolist.data.model.User;
 
 @Database(entities = {User.class, Task.class, SubTask.class}, version = 5, exportSchema = false)
 

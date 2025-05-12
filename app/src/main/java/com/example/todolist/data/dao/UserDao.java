@@ -1,9 +1,11 @@
-package com.example.todolist;
+package com.example.todolist.data.dao;
 
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Update;
+
+import com.example.todolist.data.model.User;
 
 import java.util.List;
 

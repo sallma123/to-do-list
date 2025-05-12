@@ -1,4 +1,4 @@
-package com.example.todolist;
+package com.example.todolist.ui.profile;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,6 +9,11 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.todolist.R;
+import com.example.todolist.ui.auth.ChangePasswordActivity;
+import com.example.todolist.ui.auth.LoginActivity;
+import com.example.todolist.ui.calendar.CalendarActivity;
+import com.example.todolist.ui.main.MainActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class ProfileActivity extends AppCompatActivity {

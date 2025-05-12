@@ -1,4 +1,4 @@
-package com.example.todolist;
+package com.example.todolist.ui.auth;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -8,6 +8,12 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.todolist.ui.main.MainActivity;
+import com.example.todolist.R;
+import com.example.todolist.data.dao.UserDao;
+import com.example.todolist.data.model.User;
+import com.example.todolist.db.AppDatabase;
 
 public class LoginActivity extends AppCompatActivity {
 

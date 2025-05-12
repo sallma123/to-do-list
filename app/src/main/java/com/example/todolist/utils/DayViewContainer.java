@@ -1,9 +1,9 @@
-package com.example.todolist;
+package com.example.todolist.utils;
 
 import android.view.View;
 import android.widget.TextView;
-import android.widget.ViewFlipper;
 
+import com.example.todolist.R;
 import com.kizitonwose.calendar.core.CalendarDay;
 import com.kizitonwose.calendar.core.DayPosition;
 import com.kizitonwose.calendar.view.ViewContainer;

@@ -1,4 +1,4 @@
-package com.example.todolist;
+package com.example.todolist.ui.profile;
 
 import android.app.Application;
 
@@ -6,6 +6,12 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+
+import com.example.todolist.data.dao.TaskDao;
+import com.example.todolist.data.dao.UserDao;
+import com.example.todolist.data.model.Task;
+import com.example.todolist.data.model.User;
+import com.example.todolist.db.AppDatabase;
 
 import java.util.List;
 import java.util.concurrent.Executors;

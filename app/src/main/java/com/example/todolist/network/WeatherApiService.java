@@ -1,4 +1,4 @@
-package com.example.todolist;
+package com.example.todolist.network;
 
 import retrofit2.Call;
 import retrofit2.http.GET;

@@ -1,4 +1,4 @@
-package com.example.todolist;
+package com.example.todolist.ui.main;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -13,6 +13,17 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.todolist.ui.profile.ProfileActivity;
+import com.example.todolist.R;
+import com.example.todolist.adapter.TaskAdapter;
+import com.example.todolist.ui.datail.TaskDetailActivity;
+import com.example.todolist.network.WeatherApiService;
+import com.example.todolist.network.WeatherClient;
+import com.example.todolist.network.WeatherResponse;
+import com.example.todolist.data.model.Task;
+import com.example.todolist.db.AppDatabase;
+import com.example.todolist.ui.auth.LoginActivity;
+import com.example.todolist.ui.calendar.CalendarActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.time.LocalDate;

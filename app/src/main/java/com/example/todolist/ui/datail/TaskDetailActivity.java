@@ -1,4 +1,4 @@
-package com.example.todolist;
+package com.example.todolist.ui.datail;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
@@ -6,13 +6,15 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
+
+import com.example.todolist.R;
+import com.example.todolist.data.model.SubTask;
 
 import java.util.Calendar;
 import java.util.List;
