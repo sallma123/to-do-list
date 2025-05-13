@@ -49,32 +49,36 @@ public class LoginActivity extends AppCompatActivity {
 
         // Gérer la connexion quand on clique sur "Login"
         loginButton.setOnClickListener(v -> {
-            String email = loginEmail.getText().toString();
-            String password = loginPassword.getText().toString();
+            String email = loginEmail.getText().toString().trim();
+            String password = loginPassword.getText().toString().trim();
 
-            // Thread pour requête Room (éviter blocage UI)
+            // Vérifie si les champs sont remplis
+            if (email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(LoginActivity.this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Lancer la vérification Room dans un thread
             new Thread(() -> {
                 User user = userDao.findByEmailAndPassword(email, password);
 
                 runOnUiThread(() -> {
                     if (user != null) {
-                        // Sauvegarde de la session avec SharedPreferences
                         SharedPreferences.Editor editor = prefs.edit();
                         editor.putInt("user_id", user.id);
                         editor.apply();
 
-                        // Lancement de l'activité principale avec l'ID utilisateur
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                         intent.putExtra("user_id", user.id);
                         startActivity(intent);
                         finish();
                     } else {
-                        // Erreur de connexion
                         Toast.makeText(LoginActivity.this, "Incorrect credentials", Toast.LENGTH_SHORT).show();
                     }
                 });
             }).start();
         });
+
 
         // Rediriger vers l'écran d'inscription
         signUpButton.setOnClickListener(v -> {
